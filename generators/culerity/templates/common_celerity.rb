@@ -8,6 +8,7 @@ After do
   @browser.close
   @browser.exit
   @server.close
+  kill_orfan_jruby
 end
 
 When /I press "(.*)"/ do |button|
@@ -68,3 +69,32 @@ def assert_successful_response
     raise "Brower returned Response Code #{@browser.page.web_response.status_code}"
   end
 end
+
+# some java processes are remaining in memory
+def kill_orfan_jruby
+  pid = `cat tmp/pids/celerity_jruby.pid`.gsub(/[^0-9]/,'')
+  unless pid.blank?
+    # is it the process still alive?
+    remained = `ps #{pid} | grep #{pid} | awk '{ print $1 }'`
+    unless remained.blank?
+      # we are silencing output because of annoying message
+      `kill TERM #{pid} &> /dev/null`
+      puts "killed orfan jruby process #{pid}"
+    end
+    `rm tmp/pids/celerity_jruby.pid`
+  end
+end
+
+# or you prefer the bash version
+# #!/bin/bash
+# PID=`cat tmp/pids/celerity_jruby.pid`
+# if [ -n $PID ]; then
+#   # is it the process still alive?
+#   REMAINED_PID=`ps $PID | grep $PID | awk '{ print $1 }'`
+#   if [ -n $REMAINED_PID ]; then
+#     # we are silencing output because of annoying message
+#     kill TERM $PID &> /dev/null
+#     echo "killed jruby process $PID"
+#   fi
+# rm tmp/pids/celerity_jruby.pid
+# fi

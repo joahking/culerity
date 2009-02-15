@@ -4,9 +4,11 @@ require File.dirname(__FILE__) + '/culerity/remote_browser_proxy'
 module Culerity
 
   def self.run_server
-    IO.popen("jruby #{__FILE__}", 'r+')
+    pipe = IO.popen("jruby #{__FILE__}", 'r+')
+    `echo #{pipe.pid} > tmp/pids/celerity_jruby.pid`
+    pipe
   end
-  
+
 end
 
 if __FILE__ == $0
